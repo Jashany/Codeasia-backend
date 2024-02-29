@@ -7,6 +7,7 @@ import fetch from "node-fetch";
 import nodemailer from 'nodemailer';
 import Settings from "./model/settings.model.js";
 import ApprovedUser from "./model/approveduser.model.js";
+import Admin from "./model/admin.model.js";
    
 const app = Express();
 dotenv.config();
@@ -140,11 +141,30 @@ app.post('/api/slack_id', async (req, res) => {
     }
 });
 
+app.post('/api/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const admin = await Admin.findOne({ username, password });
+        if (!admin) {
+            return res.status(404).json({ message: 'Invalid credentials' });
+        }
+
+        // If login is successful, include user data in the response
+        res.status(200).json({ message: 'Login successful', user: admin });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
+
 ConnectDB().then(() => {
     app.listen(process.env.PORT, () => {
         console.log(`Server is running on PORT ${process.env.PORT}`);
     });
 });
+
+
 
 
 
